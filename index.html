@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Republic of Diamonds</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Cinzel:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="rod.css">
+</head>
+<body>
+
+<!-- ═══════════════ SEARCH OVERLAY ═══════════════════════════ -->
+<div class="search-overlay" id="searchOverlay" role="dialog" aria-label="Search">
+  <div class="search-overlay-inner">
+    <button class="search-close" onclick="closeSearch()" aria-label="Close search">✕</button>
+    <span class="search-overlay-label">Search Republic of Diamonds</span>
+    <div class="search-input-row">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input id="searchInput" type="text" placeholder="What are you looking for?"
+        oninput="handleSearchInput(this.value)"
+        onkeydown="handleSearchKey(event)">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+    <div id="searchPopular">
+      <span class="search-popular-label">Popular Searches</span>
+      <div class="search-pills">
+        <button class="search-pill" onclick="runSearch('Round Diamond')">Round Diamond</button>
+        <button class="search-pill" onclick="runSearch('Lab Grown')">Lab Grown</button>
+      </div>
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ AUTH MODAL ══════════════════════════════ -->
+<div class="auth-overlay" id="authOverlay" role="dialog" aria-label="Account">
+  <div class="auth-modal">
+    <button class="auth-close" onclick="closeAuth()">✕</button>
+    <div class="auth-logo">
+      <svg viewBox="0 0 24 24"><polygon points="12,2 19,8 17,20 7,20 5,8"/><line x1="12" y1="2" x2="7" y2="20"/><line x1="12" y1="2" x2="17" y2="20"/><line x1="5" y1="8" x2="19" y2="8"/><line x1="6.5" y1="14" x2="17.5" y2="14"/></svg>
+      <span class="auth-logo-name">Republic of Diamonds</span>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-create" onclick="switchAuthTab('create')">Create Account</button>
+    </div>
+
+    <!-- SIGN IN PANEL -->
+    <div class="auth-panel active" id="panel-signin">
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" id="signin-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="auth-submit" onclick="handleSignIn()">
+        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign In
+      </button>
+      <button class="auth-forgot" onclick="handleForgotPassword()">Forgot your password?</button>
+    </div>
+
+    <!-- CREATE ACCOUNT PANEL -->
+    <div class="auth-panel" id="panel-create">
+      <div class="auth-name-row">
+        <div class="auth-field">
+          <label>First Name</label>
+          <input type="text" id="create-firstname" placeholder="Jane" autocomplete="given-name">
+        </div>
+        <div class="auth-field">
+          <label>Last Name</label>
+          <input type="text" id="create-lastname" placeholder="Smith" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>Email Address</label>
+        <input type="email" id="create-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="create-password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button class="auth-submit" onclick="handleCreateAccount()">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Create Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CART DRAWER ══════════════════════════════ -->
+<div class="cart-drawer-backdrop" id="cartBackdrop" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <span class="cart-drawer-title">Your Selection</span>
+    <button class="cart-drawer-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-drawer-body" id="cartBody">
+    <!-- populated by JS -->
+  </div>
+  <div class="cart-drawer-footer" id="cartFooter" style="display:none">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cartTotal">R 0</span>
+    </div>
+    <button class="cart-checkout-btn" onclick="handleCheckout()">Proceed to Enquiry</button>
+    <a href="https://wa.me/27722494793" class="cart-whatsapp-btn" target="_blank">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Chat on WhatsApp
+    </a>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="auth-toast" id="toast"></div>
+
+<!-- ═══════════════ NAV (shared) ════════════════════════════════════ -->
+<nav>
+  <a class="nav-logo" href="#home" onclick="showPage('home')">Republic of Diamonds</a>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="navLinks">
+    <li><a id="nav-home" href="#home" onclick="showPage('home');closeMobileNav()" class="active">Home</a></li>
+    <li><a id="nav-loose" href="#loose" onclick="showPage('loose');closeMobileNav()">Loose Diamonds</a></li>
+    <li><a id="nav-services" href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); closeMobileNav(); return false;">Services</a></li>
+    <li><a id="nav-why" href="#why" onclick="showPage('home'); scrollToSection('why'); closeMobileNav(); return false;">Why Us</a></li>
+    <li><a id="nav-gallery" href="#gallery" onclick="showPage('home'); scrollToSection('gallery'); closeMobileNav(); return false;">Gallery</a></li>
+    <li><a id="nav-reviews" href="#reviews" onclick="showPage('home'); scrollToSection('reviews'); closeMobileNav(); return false;">Reviews</a></li>
+    <li><a id="nav-faq" href="#faq" onclick="showPage('home'); scrollToSection('faq'); closeMobileNav(); return false;">FAQ</a></li>
+  </ul>
+  <div class="nav-icons">
+    <svg onclick="openSearch()" title="Search diamonds" viewBox="0 0 24 24" style="cursor:pointer"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <svg onclick="openAuth()" title="Account" viewBox="0 0 24 24" style="cursor:pointer"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-icon cart-icon" onclick="openCart()" title="View cart">
+      <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+    </span>
+  </div>
+</nav>
+
+<!-- ═══════════════ HOME PAGE ════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- HERO -->
+  <section id="hero" class="home-section" style="padding:0">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-left">
+      <div class="hero-badge">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Bespoke Fine Jewellery
+      </div>
+      <h1 class="hero-h1">Diamonds, <em>designed</em><br>around you.</h1>
+      <p class="hero-body">Republic of Diamonds creates one-of-a-kind engagement rings and wedding bands — ethically sourced, GIA and IGI-certified, handcrafted by master goldsmiths.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" onclick="showPage('home'); scrollToSection('consultation')" style="cursor:pointer">Book a private consultation</a>
+        <a class="btn-outline" onclick="showPage('loose')" style="cursor:pointer">Browse Diamonds</a>
+      </div>
+      <div class="hero-whatsapp">
+        <a href="https://wa.me/27722494793" class="btn-ghost" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Chat on WhatsApp
+        </a>
+      </div>
+      <div class="hero-trust">
+        <span>GIA and IGI Certified</span>
+        <span class="hero-trust-dot">◆</span>
+        <span>Locally Made</span>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-img-wrap">
+        <div class="img-corner c-tl"></div>
+        <div class="img-corner c-tr"></div>
+        <div class="img-corner c-bl"></div>
+        <div class="img-corner c-br"></div>
+        <div class="hero-img-frame">
+          <img src="ring.jpeg" alt="Bespoke diamond engagement ring" width="500" height="600">
+          <svg class="hero-diamond-svg" viewBox="0 0 260 260" fill="none">
+            <defs>
+              <linearGradient id="dg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f5be1f"/>
+                <stop offset="100%" stop-color="#b98300"/>
+              </linearGradient>
+            </defs>
+            <polygon points="130,22 218,88 194,228 66,228 42,88" stroke="url(#dg)" stroke-width="1.5" fill="rgba(235,169,2,0.04)"/>
+            <polygon points="130,22 168,72 130,82 92,72" stroke="url(#dg)" stroke-width="1" fill="rgba(235,169,2,0.07)"/>
+            <polygon points="168,72 218,88 194,148 130,82" stroke="url(#dg)" stroke-width="1" fill="rgba(235,169,2,0.04)"/>
+            <polygon points="92,72 130,82 66,148 42,88" stroke="url(#dg)" stroke-width="1" fill="rgba(235,169,2,0.08)"/>
+            <polygon points="130,82 194,148 130,228 66,148" stroke="url(#dg)" stroke-width="1" fill="rgba(235,169,2,0.05)"/>
+            <polygon points="130,82 194,148 194,228 130,228" stroke="url(#dg)" stroke-width="0.75" fill="rgba(235,169,2,0.06)"/>
+            <polygon points="130,82 66,148 66,228 130,228" stroke="url(#dg)" stroke-width="0.75" fill="rgba(235,169,2,0.03)"/>
+            <line x1="130" y1="22" x2="130" y2="228" stroke="url(#dg)" stroke-width="0.5" opacity="0.35"/>
+            <line x1="42" y1="88" x2="218" y2="88" stroke="url(#dg)" stroke-width="0.5" opacity="0.35"/>
+            <line x1="66" y1="148" x2="194" y2="148" stroke="url(#dg)" stroke-width="0.5" opacity="0.35"/>
+            <circle cx="152" cy="55" r="3.5" fill="#f5be1f" opacity="0.65"/>
+            <circle cx="178" cy="100" r="2" fill="#f5be1f" opacity="0.35"/>
+          </svg>
+        </div>
+      </div>
+    
+    </div>
+  </section>
+
+  <!-- SPECIALITIES -->
+  <section id="specialities" class="home-section">
+    <span class="s-label">What We Craft</span>
+    <h2 class="s-title">Four specialities. <em>Infinite detail.</em></h2>
+    <p class="s-body" style="max-width:520px;margin:12px auto 60px">Engagement rings, wedding bands, diamond necklaces and earrings — each piece made to last a lifetime.</p>
+    <div class="cards-grid">
+      <div class="spec-card">
+        <span class="card-num">01</span>
+        <img src="customEngagementRings.jpeg" alt="Custom Engagement Rings">
+        <h3 class="card-title">Custom Engagement Rings</h3>
+        <p class="card-body">From the first sketch to the final polish — a private design journey ending in a ring that's unmistakably yours.</p>
+        <ul class="card-list">
+          <li>Private consultation</li>
+          <li>CAD preview &amp; stone selection</li>
+          <li>Hand-crafted in our atelier</li>
+        </ul>
+        <button class="card-cta" onclick="scrollToSection('consultation')">Enquire about this</button>
+      </div>
+      <div class="spec-card">
+        <span class="card-num">02</span>
+        <img src="weddingBands.jpeg" alt="Wedding Bands">
+        <h3 class="card-title">Wedding Bands</h3>
+        <p class="card-body">His &amp; hers, matched sets, and custom engraving in platinum, white gold, yellow gold or rose gold.</p>
+        <ul class="card-list">
+          <li>Matched or contrasting designs</li>
+          <li>Comfort-fit profiles</li>
+          <li>Custom engraving included</li>
+        </ul>
+        <button class="card-cta" onclick="scrollToSection('consultation')">Enquire about this</button>
+      </div>
+      <div class="spec-card">
+        <span class="card-num">03</span>
+        <img src="necklaces.jpeg" alt="Diamond Necklaces" >
+        <h3 class="card-title">Diamond Necklaces</h3>
+        <p class="card-body">Solitaire pendants, tennis necklaces and bespoke heirloom pieces — designed to be worn every day or saved for the moment.</p>
+        <ul class="card-list">
+          <li>Solitaire &amp; halo pendants</li>
+          <li>Tennis &amp; station necklaces</li>
+          <li>Custom heirloom redesigns</li>
+        </ul>
+        <button class="card-cta" onclick="scrollToSection('consultation')">Enquire about this</button>
+      </div>
+      <div class="spec-card">
+        <span class="card-num">04</span>
+        <img src="earrings.jpeg" alt="Earrings">
+        <h3 class="card-title">Earrings</h3>
+        <p class="card-body">Studs, hoops and statement drops — crafted in precious metals and set with brilliant, ethically sourced diamonds.</p>
+        <ul class="card-list">
+          <li>Diamond studs &amp; halos</li>
+          <li>Hoops &amp; huggies</li>
+          <li>Bespoke statement drops</li>
+        </ul>
+        <button class="card-cta" onclick="scrollToSection('consultation')">Enquire about this</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section id="why" class="home-section">
+    <span class="s-label">Why Republic of Diamonds</span>
+    <h2 class="s-title">Built on trust.<br>Worn for a lifetime.</h2>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <span class="trust-name">Ethically Sourced</span>
+        <p class="trust-desc">Every diamond is GIA and IGI-certified and conflict-free, with full traceability.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <span class="trust-name">Master Goldsmiths</span>
+        <p class="trust-desc">Over 20 years of bench experience crafting fine jewellery in our atelier.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+        <span class="trust-name">Workshop Pricing</span>
+        <p class="trust-desc">Direct from our atelier — no retail middleman markup. Ever.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <span class="trust-name">Fully Bespoke Service</span>
+        <p class="trust-desc">We'll ensure you feel empowered whilst we design your dream piece.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="gallery" class="home-section">
+    <div class="gallery-header">
+      <div>
+        <span class="s-label">Recent Work</span>
+        <h2 class="s-title">From our<br><em>atelier.</em></h2>
+      </div>
+      <p class="gallery-desc">A glimpse of recent commissions — each piece designed with its wearer in mind. Every ring tells a story of the couple behind it.</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item"><img src="customEngagementRings.jpeg" alt="Custom Engagement Ring"></div>
+      <div class="gallery-item"><img src="weddingBands.jpeg" alt="Wedding Bands"></div>
+      <div class="gallery-item"><img src="gallery3.jpeg" alt="Gallery 3"></div>
+      <div class="gallery-item"><img src="gallery4.jpeg" alt="Gallery 4"></div>
+      <div class="gallery-item"><img src="gallery5.jpeg" alt="Gallery 5"></div>
+      <div class="gallery-item"><img src="gallery6.jpeg" alt="Gallery 6"></div>
+      <div class="gallery-item"><img src="gallery7.jpeg" alt="Gallery 7"></div>
+      <div class="gallery-item"><img src="gallery8.jpeg" alt="Gallery 8"></div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section id="reviews" class="home-section">
+    <span class="s-label">Loved by Couples Across ZA</span>
+    <h2 class="s-title">Zero regrets.</h2>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">"Josh brought our vision to life with patience, style and a beautiful understanding of what we wanted. The final ring felt instantly personal and perfectly finished."</p>
+        <p class="review-author">— Sarah &amp; Michael, Cape Town</p>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">"From the first consultation to delivery, the service was exceptional. Every detail was explained clearly, and the craftsmanship exceeded our expectations."</p>
+        <p class="review-author">— Priya &amp; Daniel, Johannesburg</p>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-quote">"The ring is stunning, exactly what we imagined. Republic of Diamonds made the process effortless and left us feeling excited every step of the way."</p>
+        <p class="review-author">— Emily &amp; Thabo, Pretoria</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="home-section">
+    <span class="s-label">Frequently Asked</span>
+    <h2 class="s-title">Good questions,<br><em>honest answers.</em></h2>
+    <div class="faq-list">
+      <div class="faq-item open">
+        <button class="faq-btn" onclick="toggleFaq(this)">Are your diamonds certified? <span class="faq-icon">+</span></button>
+        <div class="faq-answer">Yes. Every centre stone we sell is independently graded by GIA and IGI, with full certification provided.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">How long does a custom ring take? <span class="faq-icon">+</span></button>
+        <div class="faq-answer">Custom rings typically take 3–5 weeks from final design approval. Rush orders may be available — ask during your consultation.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">Do you ship across South Africa? <span class="faq-icon">+</span></button>
+        <div class="faq-answer">Yes, we offer fully insured delivery across South Africa. All pieces are professionally packaged and tracked door-to-door.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">What does the consultation process look like? <span class="faq-icon">+</span></button>
+        <div class="faq-answer">We begin with a private consultation (in person or virtual) to understand your vision, budget and timeline. From there we present stone options, a CAD design preview, and guide you through every step until delivery.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-btn" onclick="toggleFaq(this)">What's your return and resize policy? <span class="faq-icon">+</span></button>
+        <div class="faq-answer">We offer complimentary resizing within 60 days of delivery. As all pieces are bespoke, we do not accept returns — but we'll always make it right.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONSULTATION -->
+  <section id="consultation" class="home-section">
+    <div class="consult-grid">
+      <div class="consult-left">
+        <span class="s-label">Begin the Journey</span>
+        <h2 class="s-title" style="color:#181818">Book a private consultation</h2>
+        <div class="gold-rule" style="background:#181818;opacity:0.28"></div>
+        <p class="s-body" style="color:rgba(24,24,24,0.62);margin-bottom:24px">Share your vision, select a time slot and let our founder guide your bespoke design process.</p>
+        <div class="schedule-panel">
+          <span class="schedule-head">Schedule your appointment</span>
+          <p class="schedule-note">Choose a date and time. We’ll confirm within one business day.</p>
+          <div class="schedule-grid">
+            <label>
+              Date
+              <input id="scheduleDate" type="date">
+            </label>
+            <label>
+              Time
+              <select id="scheduleTime">
+                <option>09:00</option>
+                <option>10:30</option>
+                <option>12:00</option>
+                <option>13:30</option>
+                <option>15:00</option>
+                <option>16:30</option>
+              </select>
+            </label>
+            <label>
+              Type
+              <select id="scheduleType">
+                <option>In-person consultation</option>
+                <option>Virtual video call</option>
+                <option>WhatsApp chat</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn-primary" onclick="scheduleConsultation()">Schedule appointment</button>
+          <p class="schedule-meta">Available Mon-Fri, 09:00-18:00 SAST · Crafted in South Africa</p>
+        </div>
+        <a href="https://wa.me/27722494793" class="btn-ghost" style="color:#181818;border-color:rgba(24,24,24,0.28)" target="_blank">
+          <svg viewBox="0 0 24 24" style="fill:#181818"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Or chat on WhatsApp
+        </a>
+      </div>
+      <div class="form-card">
+        <p class="form-head">Send us a message</p>
+        <p class="form-sub">We'll reply within one business day.</p>
+        <form id="consultForm" onsubmit="handleConsultSubmit(event)">
+          <div class="form-group"><label for="fullname">Full name</label><input id="fullname" name="fullname" type="text" placeholder="Your name" required></div>
+          <div class="form-row">
+            <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" placeholder="you@email.com" required></div>
+            <div class="form-group"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" placeholder="+27 ..."></div>
+          </div>
+          <div class="form-group">
+            <label for="project">Project type</label>
+            <select id="project" name="project">
+              <option>Custom Engagement Ring</option>
+              <option>Wedding Bands</option>
+              <option>Diamond Necklace</option>
+              <option>Earrings</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label for="vision">Tell us about your vision</label><textarea id="vision" name="vision" placeholder="Style, stones, budget, timeline — anything you have in mind."></textarea></div>
+          <input type="submit" class="form-submit" value="Send enquiry">
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER (home) -->
+  <footer>
+    <div class="footer-grid footer-grid-wide">
+      <div class="footer-brand">
+        <p class="footer-logo">Republic of Diamonds</p>
+        <p class="footer-tag">Timeless brilliance. Modern luxury.</p>
+        <p class="footer-note">Creating one-of-a-kind bespoke jewellery crafted in South Africa. Every piece is a collaboration between you and our master goldsmiths.</p>
+      </div>
+      <div class="footer-column">
+        <p class="footer-title">Collections</p>
+        <a href="#loose" onclick="showPage('loose'); return false;">Loose Diamonds</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Engagement Rings</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Wedding Bands</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Diamond Necklaces</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Earrings</a>
+      </div>
+      <div class="footer-column">
+        <p class="footer-title">Company</p>
+        <a href="#why" onclick="showPage('home'); scrollToSection('why'); return false;">Why Us</a>
+        <a href="#gallery" onclick="showPage('home'); scrollToSection('gallery'); return false;">Gallery</a>
+        <a href="#reviews" onclick="showPage('home'); scrollToSection('reviews'); return false;">Reviews</a>
+        <a href="#faq" onclick="showPage('home'); scrollToSection('faq'); return false;">FAQ</a>
+        <a href="#consultation" onclick="showPage('home'); scrollToSection('consultation'); return false;">Book Consultation</a>
+      </div>
+      <div class="footer-column footer-contact-panel">
+        <p class="footer-title">Contact</p>
+        <p><span class="footer-icon">👤</span>Josh Datnow, Founder</p>
+        <p><span class="footer-icon">📞</span><a href="tel:+27722494793">+27 72 249 4793</a></p>
+        <p><span class="footer-icon">✉️</span><a href="mailto:hello@republicofdiamonds.com">hello@republicofdiamonds.com</a></p>
+        <p><span class="footer-icon">📍</span>Crafted in South Africa</p>
+        <p><span class="footer-icon">⏰</span>Mon-Fri, 09:00-18:00 SAST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 Republic of Diamonds · Privacy policy · Ethically sourced diamonds, expertly made.</p>
+    </div>
+  </footer>
+
+</div><!-- /page-home -->
+
+<!-- ═══════════════ LOOSE DIAMONDS PAGE ══════════════════════ -->
+<div id="page-loose" class="page">
+
+  <div class="ld-header">
+    <h1>Loose Diamonds</h1>
+    <p class="ld-intro">Browse our curated collection of natural and lab grown stones with premium cuts, GIA + IGI certification, and elegant colour options. Filter by shape, clarity and price to find the perfect centrepiece for your next bespoke creation.</p>
+  </div>
+
+  <div class="ld-body">
+
+    <div class="type-tabs">
+      <button class="type-tab active" onclick="switchTab(this)">Natural</button>
+      <button class="type-tab" onclick="switchTab(this)">Lab Grown</button>
+    </div>
+
+    <div class="ld-filter-grid">
+
+      <div>
+        <span class="f-label">Shape</span>
+        <div class="shape-row">
+          <button class="shape-btn active" onclick="toggleShape(this,'Round')">
+            <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11"/><line x1="16" y1="5" x2="16" y2="27"/><line x1="5" y1="16" x2="27" y2="16"/><line x1="8.5" y1="8.5" x2="23.5" y2="23.5"/><line x1="23.5" y1="8.5" x2="8.5" y2="23.5"/></svg>
+            Round
+          </button>
+          <button class="shape-btn" onclick="toggleShape(this,'Oval')">
+            <svg viewBox="0 0 32 32"><ellipse cx="16" cy="16" rx="8" ry="12"/><line x1="16" y1="4" x2="16" y2="28"/><line x1="8" y1="10" x2="24" y2="22"/><line x1="24" y1="10" x2="8" y2="22"/></svg>
+            Oval
+          </button>
+          <button class="shape-btn" onclick="toggleShape(this,'Emerald')">
+            <svg viewBox="0 0 32 32"><rect x="7" y="5" width="18" height="22" rx="1"/><line x1="7" y1="10" x2="25" y2="10"/><line x1="7" y1="22" x2="25" y2="22"/><line x1="11" y1="5" x2="11" y2="27"/><line x1="21" y1="5" x2="21" y2="27"/></svg>
+            Emerald
+          </button>
+          <button class="shape-btn" onclick="toggleShape(this,'all')">
+            All
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <span class="f-label">Carats</span>
+        <div class="input-pair">
+          <input type="number" id="minCarat" value="0.5" min="0.1" max="10" step="0.1" onchange="applyFilters()"> <span>ct</span>
+          <span>—</span>
+          <input type="number" id="maxCarat" value="5.0" min="0.1" max="10" step="0.1" onchange="applyFilters()"> <span>ct</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="f-label">Colour</span>
+        <div class="col-toggle">
+          <button class="col-btn active" onclick="toggleCol(this,'White')">White</button>
+          <button class="col-btn" onclick="toggleCol(this,'Fancy')">Fancy</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="f-label">Clarity</span>
+        <div class="col-toggle">
+          <button class="col-btn active" onclick="toggleClarity(this,'any')">Any</button>
+          <button class="col-btn" onclick="toggleClarity(this,'SI')">SI</button>
+          <button class="col-btn" onclick="toggleClarity(this,'VS')">VS</button>
+          <button class="col-btn" onclick="toggleClarity(this,'VVS+')">VVS+</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="f-label">Cut</span>
+        <div class="col-toggle">
+          <button class="col-btn active" onclick="toggleCut(this,'any')">Any</button>
+          <button class="col-btn" onclick="toggleCut(this,'VG')">Very Good</button>
+          <button class="col-btn" onclick="toggleCut(this,'EX')">Excellent</button>
+        </div>
+      </div>
+
+      <div>
+        <span class="f-label">Price (ZAR)</span>
+        <div class="input-pair">
+          <input type="number" id="minPrice" value="0" min="0" step="100" onchange="applyFilters()">
+          <span>—</span>
+          <input type="number" id="maxPrice" value="100000" min="0" step="100" onchange="applyFilters()">
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="filter-divider">
+
+    <!-- Results bar -->
+    <div class="results-bar" style="margin-top:32px">
+      <p class="results-count">Results — <strong id="resultCount">0 Diamonds</strong></p>
+      <div class="results-right">
+        <div class="view-toggle">
+          <button class="view-btn" onclick="setView('list',this)" title="List">
+            <svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3"/><rect x="1" y="7" width="14" height="3"/><rect x="1" y="12" width="14" height="3"/></svg>
+          </button>
+          <button class="view-btn active" onclick="setView('grid',this)" title="Grid">
+            <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6"/><rect x="9" y="1" width="6" height="6"/><rect x="1" y="9" width="6" height="6"/><rect x="9" y="9" width="6" height="6"/></svg>
+          </button>
+        </div>
+        <select class="sort-select" onchange="sortDiamonds(this.value)">
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="carat">Carat weight</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="diamonds-grid" id="diamondsGrid"></div>
+
+  </div>
+
+  <footer>
+    <div class="footer-grid footer-grid-wide">
+      <div class="footer-brand">
+        <p class="footer-logo">Republic of Diamonds</p>
+        <p class="footer-tag">Timeless brilliance. Modern luxury.</p>
+        <p class="footer-note">Creating one-of-a-kind bespoke jewellery crafted in South Africa. Every piece is a collaboration between you and our master goldsmiths.</p>
+        <div class="social-links">
+          <a href="https://www.instagram.com/republicofdiamonds" target="_blank" aria-label="Instagram"><span>IG</span></a>
+          <a href="https://wa.me/27722494793" target="_blank" aria-label="WhatsApp"><span>WA</span></a>
+          <a href="mailto:hello@republicofdiamonds.com" aria-label="Email"><span>EM</span></a>
+        </div>
+      </div>
+      <div class="footer-column">
+        <p class="footer-title">Collections</p>
+        <a href="#loose" onclick="showPage('loose'); return false;">Loose Diamonds</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Engagement Rings</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Wedding Bands</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Diamond Necklaces</a>
+        <a href="#specialities" onclick="showPage('home'); scrollToSection('specialities'); return false;">Earrings</a>
+      </div>
+      <div class="footer-column">
+        <p class="footer-title">Company</p>
+        <a href="#why" onclick="showPage('home'); scrollToSection('why'); return false;">Why Us</a>
+        <a href="#gallery" onclick="showPage('home'); scrollToSection('gallery'); return false;">Gallery</a>
+        <a href="#reviews" onclick="showPage('home'); scrollToSection('reviews'); return false;">Reviews</a>
+        <a href="#faq" onclick="showPage('home'); scrollToSection('faq'); return false;">FAQ</a>
+        <a href="#consultation" onclick="showPage('home'); scrollToSection('consultation'); return false;">Book Consultation</a>
+      </div>
+      <div class="footer-column footer-contact-panel">
+        <p class="footer-title">Contact</p>
+        <p><span class="footer-icon">👤</span>Josh Datnow, Founder</p>
+        <p><span class="footer-icon">📞</span><a href="tel:+27722494793">+27 72 249 4793</a></p>
+        <p><span class="footer-icon">✉️</span><a href="mailto:hello@republicofdiamonds.com">hello@republicofdiamonds.com</a></p>
+        <p><span class="footer-icon">📍</span>Crafted in South Africa</p>
+        <p><span class="footer-icon">⏰</span>Mon-Fri, 09:00-18:00 SAST</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2026 Republic of Diamonds · Privacy policy · Ethically sourced diamonds, expertly made.</p>
+    </div>
+  </footer>
+
+</div><!-- /page-loose -->
+
+<!-- ═══════════════ JAVASCRIPT ════════════════════════════════ -->
+<script>
+/* ── MOBILE NAV ──────────────────────────────────────────── */
+function toggleMobileNav() {
+  const links = document.getElementById('navLinks');
+  const btn = document.getElementById('navHamburger');
+  links.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('navLinks').classList.remove('open');
+  document.getElementById('navHamburger').classList.remove('open');
+}
+
+/* ── PAGE ROUTING ────────────────────────────────────────── */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  const target = document.getElementById('nav-' + id);
+  if (target) target.classList.add('active');
+}
+
+function scrollToSection(id) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 60);
+}
+
+/* ── FAQ ─────────────────────────────────────────────────── */
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const open = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!open) item.classList.add('open');
+}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+/* ── SEARCH OVERLAY ──────────────────────────────────────── */
+function openSearch() {
+  document.getElementById('searchOverlay').classList.add('open');
+  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('searchPopular').style.display = '';
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+  document.body.style.overflow = 'hidden';
+}
+function closeSearch() {
+  document.getElementById('searchOverlay').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+const SVG_MINI = {
+  Round: `<svg viewBox="0 0 120 120" fill="none"><circle cx="60" cy="60" r="47" fill="rgba(235,169,2,0.12)" stroke="rgba(235,169,2,0.4)" stroke-width="1"/><polygon points="60,13 80,38 60,47 40,38" fill="rgba(235,169,2,0.2)" stroke="rgba(235,169,2,0.3)" stroke-width="0.5"/><polygon points="60,47 80,63 60,107 40,63" fill="rgba(235,169,2,0.1)" stroke="rgba(235,169,2,0.3)" stroke-width="0.5"/></svg>`,
+  Oval:   `<svg viewBox="0 0 120 140" fill="none"><ellipse cx="60" cy="70" rx="45" ry="59" fill="rgba(235,169,2,0.12)" stroke="rgba(235,169,2,0.4)" stroke-width="1"/><polygon points="60,11 79,40 60,51 41,40" fill="rgba(235,169,2,0.2)" stroke="rgba(235,169,2,0.3)" stroke-width="0.5"/></svg>`,
+  Emerald:`<svg viewBox="0 0 110 130" fill="none"><rect x="10" y="12" width="90" height="106" rx="4" fill="rgba(235,169,2,0.12)" stroke="rgba(235,169,2,0.4)" stroke-width="1"/><rect x="18" y="20" width="74" height="90" rx="2" fill="none" stroke="rgba(235,169,2,0.25)" stroke-width="0.5"/></svg>`
+};
+
+function normalizeSearchTerm(val) {
+  return val.trim().toLowerCase().replace(/[^a-z0-9\s]/g, '');
+}
+
+function handleSearchInput(val) {
+  const clear = document.getElementById('searchClear');
+  const popular = document.getElementById('searchPopular');
+  clear.classList.toggle('visible', val.trim().length > 0);
+  if (val.trim().length === 0) {
+    document.getElementById('searchResults').innerHTML = '';
+    popular.style.display = '';
+    return;
+  }
+  popular.style.display = 'none';
+
+  const q = normalizeSearchTerm(val);
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const synonyms = {
+    engagement: 'round',
+    engagements: 'round',
+    ring: 'round',
+    rings: 'round',
+    band: 'round',
+    bands: 'round',
+    lab: 'lab grown',
+    'lab-grown': 'lab grown',
+    'labgrown': 'lab grown',
+    fancy: 'fancy',
+    green: 'fancy green',
+    yellow: 'fancy yellow',
+    pink: 'fancy pink',
+    blue: 'fancy blue'
+  };
+
+  const results = allDiamonds
+    .map(d => {
+      const fields = [
+        d.name.toLowerCase(),
+        d.colour.toLowerCase(),
+        d.clarity.toLowerCase(),
+        d.cut.toLowerCase(),
+        d.cert.toLowerCase(),
+        d.type.toLowerCase(),
+        d.shape.toLowerCase()
+      ];
+      const score = tokens.reduce((sum, token) => {
+        const term = synonyms[token] || token;
+        return sum + fields.filter(field => field.includes(term)).length;
+      }, 0);
+      return { diamond: d, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.diamond.price - b.diamond.price)
+    .map(item => item.diamond)
+    .slice(0, 10);
+
+  renderSearchResults(results, val);
+}
+
+function renderSearchResults(results, query) {
+  const el = document.getElementById('searchResults');
+  if (!results.length) {
+    el.innerHTML = `<div class="search-no-results">No diamonds found for "${query}". Try “Round”, “Lab Grown”, or “Emerald”.</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="search-results-header">${results.length} premium diamonds found</div>
+    ${results.map(d => `
+      <div class="search-result-item" onclick="goToDiamond('${d.type}','${d.shape}')">
+        <div class="search-result-shape">${SVG_MINI[d.shape] || SVG_MINI.Round}</div>
+        <div>
+          <div class="search-result-name">${d.name}</div>
+          <div class="search-result-specs">${d.colour} · ${d.clarity} · ${d.cut} · ${d.cert}</div>
+        </div>
+        <div class="search-result-price">R ${d.price.toLocaleString()}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function goToDiamond(type, shape) {
+  closeSearch();
+  currentFilter.type = type;
+  currentFilter.shape = shape === 'all' ? null : shape;
+  showPage('loose');
+  applyFilters();
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('searchPopular').style.display = '';
+  document.getElementById('searchInput').focus();
+}
+
+function runSearch(term) {
+  document.getElementById('searchInput').value = term;
+  handleSearchInput(term);
+}
+
+function handleSearchKey(e) {
+  if (e.key === 'Escape') closeSearch();
+}
+
+/* ── AUTH MODAL ──────────────────────────────────────────── */
+function openAuth() {
+  document.getElementById('authOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+function handleSignIn() {
+  const email = document.getElementById('signin-email').value.trim();
+  const pass = document.getElementById('signin-password').value;
+  if (!email || !pass) { showToast('Please fill in all fields'); return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { showToast('Please enter a valid email address'); return; }
+  closeAuth();
+  showToast('Welcome back! Sign-in successful ◆');
+}
+
+function handleCreateAccount() {
+  const first = document.getElementById('create-firstname').value.trim();
+  const last = document.getElementById('create-lastname').value.trim();
+  const email = document.getElementById('create-email').value.trim();
+  const pass = document.getElementById('create-password').value;
+  if (!first || !last || !email || !pass) { showToast('Please fill in all fields'); return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { showToast('Please enter a valid email address'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters'); return; }
+  closeAuth();
+  showToast(`Welcome, ${first}! Your account has been created ◆`);
+}
+
+function handleForgotPassword() {
+  const email = document.getElementById('signin-email').value.trim();
+  if (!email) { showToast('Enter your email above first'); return; }
+  showToast('Password reset link sent to ' + email);
+}
+
+// Close overlays on backdrop click
+document.getElementById('authOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
+document.getElementById('searchOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSearch();
+});
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeSearch();
+    closeAuth();
+    closeCart();
+  }
+});
+
+/* ── CART ────────────────────────────────────────────────── */
+let cart = [];
+
+function openCart() {
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('cartBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderCart();
+}
+function closeCart() {
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('cartBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderCart() {
+  const body = document.getElementById('cartBody');
+  const footer = document.getElementById('cartFooter');
+  const total = document.getElementById('cartTotal');
+  if (!cart.length) {
+    body.innerHTML = `
+      <div class="cart-empty">
+        <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <div class="cart-empty-title">Your selection is empty</div>
+        <div class="cart-empty-body">Browse our collection of GIA &amp; IGI certified diamonds and add your favourites here.</div>
+        <button class="cart-empty-cta" onclick="closeCart(); showPage('loose')">Browse Diamonds</button>
+      </div>`;
+    footer.style.display = 'none';
+    return;
+  }
+  const sum = cart.reduce((acc, item) => acc + item.price, 0);
+  body.innerHTML = cart.map((item, i) => `
+    <div class="cart-item">
+      <div class="cart-item-img">${SVG[item.shape] || SVG.Round}</div>
+      <div>
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-specs">${item.colour} · ${item.clarity} · ${item.cut} · ${item.cert}</div>
+        <button class="cart-item-remove" onclick="removeFromCart(${i})">Remove</button>
+      </div>
+      <div class="cart-item-price">R ${item.price.toLocaleString()}</div>
+    </div>
+  `).join('');
+  total.textContent = 'R ' + sum.toLocaleString();
+  footer.style.display = '';
+}
+
+function addToCart(index) {
+  const item = allDiamonds[index];
+  cart.push(item);
+  updateCartBadge();
+  showToast(`${item.name} added ◆`);
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCartBadge();
+  renderCart();
+}
+
+function updateCartBadge() {
+  const badge = document.getElementById('cartBadge');
+  if (badge) {
+    badge.textContent = cart.length;
+    badge.style.display = cart.length ? 'inline-flex' : 'none';
+  }
+}
+
+function handleCheckout() {
+  if (!cart.length) return;
+  const list = cart.map(c => c.name).join(', ');
+  closeCart();
+  showPage('home');
+  scrollToSection('consultation');
+  setTimeout(() => {
+    const v = document.getElementById('vision');
+    if (v) v.value = `I'm interested in the following diamonds: ${list}`;
+  }, 400);
+  showToast('Your selection has been added to the enquiry form ◆');
+}
+
+/* ── CONSULTATION FORM ───────────────────────────────────── */
+function handleConsultSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('fullname').value;
+  showToast(`Thank you, ${name}! We'll be in touch within one business day ◆`, 4000);
+  e.target.reset();
+}
+
+function scheduleConsultation() {
+  const date = document.getElementById('scheduleDate').value;
+  const time = document.getElementById('scheduleTime').value;
+  const type = document.getElementById('scheduleType').value;
+  if (!date) { showToast('Please choose a date for your appointment'); return; }
+  showPage('home');
+  scrollToSection('consultation');
+  setTimeout(() => {
+    const vision = document.getElementById('vision');
+    if (vision) vision.value = `I would like to schedule a ${type.toLowerCase()} on ${date} at ${time}.`;
+  }, 300);
+  showToast(`Appointment requested for ${date} at ${time} ◆`, 4500);
+}
+
+function initScheduleDate() {
+  const dateInput = document.getElementById('scheduleDate');
+  if (!dateInput) return;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  dateInput.min = tomorrow.toISOString().split('T')[0];
+}
+
+/* ── DIAMOND DATA ────────────────────────────────────────── */
+const SVG = {
+  Round: `<svg viewBox="0 0 120 120" fill="none">
+    <defs><radialGradient id="rg" cx="40%" cy="35%"><stop offset="0%" stop-color="#fff" stop-opacity="0.95"/><stop offset="100%" stop-color="#999" stop-opacity="0.35"/></radialGradient></defs>
+    <circle cx="60" cy="60" r="47" fill="url(#rg)" stroke="#ccc" stroke-width="0.5"/>
+    <polygon points="60,13 80,38 60,47 40,38" fill="rgba(255,255,255,0.65)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="80,38 101,56 80,63 60,47" fill="rgba(200,200,200,0.55)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="40,38 60,47 39,63 19,56"  fill="rgba(230,230,230,0.65)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="60,47 80,63 60,107 40,63" fill="rgba(210,210,210,0.45)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="19,56 39,63 60,107"  fill="rgba(180,180,180,0.4)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="101,56 80,63 60,107" fill="rgba(220,220,220,0.5)" stroke="#bbb" stroke-width="0.5"/>
+    <circle cx="47" cy="32" r="4.5" fill="white" opacity="0.75"/>
+    <circle cx="37" cy="46" r="2.5" fill="white" opacity="0.55"/>
+  </svg>`,
+  Oval: `<svg viewBox="0 0 120 140" fill="none">
+    <defs><radialGradient id="og" cx="38%" cy="32%"><stop offset="0%" stop-color="#fff" stop-opacity="0.95"/><stop offset="100%" stop-color="#999" stop-opacity="0.3"/></radialGradient></defs>
+    <ellipse cx="60" cy="70" rx="45" ry="59" fill="url(#og)" stroke="#ccc" stroke-width="0.5"/>
+    <polygon points="60,11 79,40 60,51 41,40" fill="rgba(255,255,255,0.65)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="79,40 105,63 83,71 60,51" fill="rgba(200,200,200,0.55)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="41,40 60,51 37,71 15,63"  fill="rgba(230,230,230,0.65)" stroke="#bbb" stroke-width="0.5"/>
+    <polygon points="60,51 83,71 60,129 37,71" fill="rgba(210,210,210,0.4)" stroke="#bbb" stroke-width="0.5"/>
+    <circle cx="46" cy="33" r="4" fill="white" opacity="0.75"/>
+  </svg>`,
+  Emerald: `<svg viewBox="0 0 110 130" fill="none">
+    <defs><linearGradient id="eg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/><stop offset="100%" stop-color="#999" stop-opacity="0.3"/></linearGradient></defs>
+    <rect x="10" y="12" width="90" height="106" rx="4" fill="url(#eg)" stroke="#ccc" stroke-width="0.5"/>
+    <rect x="18" y="20" width="74" height="90" rx="2" fill="none" stroke="#bbb" stroke-width="0.5"/>
+    <rect x="26" y="28" width="58" height="74" rx="1" fill="none" stroke="#ccc" stroke-width="0.5"/>
+    <line x1="10" y1="30" x2="18" y2="20" stroke="#bbb" stroke-width="0.5"/>
+    <line x1="100" y1="30" x2="92" y2="20" stroke="#bbb" stroke-width="0.5"/>
+    <line x1="10" y1="100" x2="18" y2="110" stroke="#bbb" stroke-width="0.5"/>
+    <line x1="100" y1="100" x2="92" y2="110" stroke="#bbb" stroke-width="0.5"/>
+    <circle cx="33" cy="35" r="4" fill="white" opacity="0.65"/>
+  </svg>`
+};
+
+const allDiamonds = [
+  {type:'Natural', shape:'Round',   name:'0.72ct Round Natural Diamond',   colour:'G',     clarity:'SI2', cut:'EX',  price:9150,  cert:'GIA'},
+  {type:'Natural', shape:'Oval',    name:'0.85ct Oval Natural Diamond',    colour:'F',     clarity:'VS2', cut:'EX',  price:12980, cert:'GIA'},
+  {type:'Natural', shape:'Emerald', name:'0.65ct Emerald Natural Diamond', colour:'E',     clarity:'VS1', cut:'VG',  price:10720, cert:'IGI'},
+  {type:'Natural', shape:'Round',   name:'1.00ct Round Natural Diamond',   colour:'H',     clarity:'SI1', cut:'EX',  price:17850, cert:'GIA'},
+  {type:'Natural', shape:'Oval',    name:'0.95ct Oval Natural Diamond',    colour:'D',     clarity:'VVS2', cut:'EX',  price:25500, cert:'GIA'},
+  {type:'Natural', shape:'Round',   name:'1.20ct Round Natural Diamond',   colour:'F',     clarity:'VS1', cut:'EX',  price:22100, cert:'GIA'},
+  {type:'Natural', shape:'Emerald', name:'0.90ct Emerald Natural Diamond', colour:'G',     clarity:'VS2', cut:'VG',  price:19800, cert:'IGI'},
+  {type:'Natural', shape:'Round',   name:'0.55ct Round Natural Diamond',   colour:'F',     clarity:'VVS1', cut:'EX',  price:13200, cert:'GIA'},
+  {type:'Natural', shape:'Oval',    name:'0.78ct Oval Natural Diamond',    colour:'G',     clarity:'SI1', cut:'VG',  price:14350, cert:'IGI'},
+  {type:'Natural', shape:'Emerald', name:'1.05ct Emerald Natural Diamond', colour:'F',     clarity:'SI2', cut:'VG',  price:18600, cert:'GIA'},
+  {type:'Natural', shape:'Round',   name:'0.68ct Round Natural Diamond',   colour:'E',     clarity:'SI1', cut:'EX',  price:11250, cert:'IGI'},
+  {type:'Natural', shape:'Oval',    name:'0.65ct Oval Natural Diamond',    colour:'G',     clarity:'VS1', cut:'EX',  price:12400, cert:'IGI'},
+  {type:'Natural', shape:'Emerald', name:'0.72ct Emerald Natural Diamond', colour:'F',     clarity:'SI2', cut:'VG',  price:14700, cert:'GIA'},
+  {type:'Natural', shape:'Round',   name:'0.92ct Round Natural Diamond',   colour:'Fancy Pink', clarity:'VS1', cut:'EX', price:29200, cert:'GIA'},
+  {type:'Natural', shape:'Oval',    name:'1.15ct Oval Natural Diamond',    colour:'Fancy Blue', clarity:'VVS2', cut:'EX', price:31250, cert:'GIA'},
+  {type:'Natural', shape:'Emerald', name:'0.58ct Emerald Natural Diamond', colour:'Fancy Yellow', clarity:'SI1', cut:'VG', price:16500, cert:'IGI'},
+  {type:'Natural', shape:'Round',   name:'0.82ct Round Natural Diamond',   colour:'F',     clarity:'VVS1', cut:'EX', price:17400, cert:'GIA'},
+  {type:'Lab Grown', shape:'Round',   name:'0.90ct Round Lab Grown Diamond',   colour:'G',          clarity:'VS2', cut:'EX', price:7800,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Oval',    name:'1.10ct Oval Lab Grown Diamond',    colour:'F',          clarity:'VS1', cut:'EX', price:9800,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Emerald', name:'0.75ct Emerald Lab Grown Diamond', colour:'G',          clarity:'SI1', cut:'VG', price:5620,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Round',   name:'1.30ct Round Lab Grown Diamond',   colour:'D',          clarity:'VVS1', cut:'EX', price:13800, cert:'GIA'},
+  {type:'Lab Grown', shape:'Oval',    name:'0.65ct Oval Lab Grown Diamond',    colour:'Fancy Yellow', clarity:'SI1', cut:'VG', price:6000,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Round',   name:'0.60ct Round Lab Grown Diamond',   colour:'H',          clarity:'SI2', cut:'VG', price:4480,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Emerald', name:'0.85ct Emerald Lab Grown Diamond', colour:'F',          clarity:'VS1', cut:'EX', price:8700,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Round',   name:'0.78ct Round Lab Grown Diamond',   colour:'G',          clarity:'SI1', cut:'EX', price:6900,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Oval',    name:'0.88ct Oval Lab Grown Diamond',    colour:'G',          clarity:'VS2', cut:'EX', price:8300,  cert:'GIA'},
+  {type:'Lab Grown', shape:'Emerald', name:'0.82ct Emerald Lab Grown Diamond', colour:'F',          clarity:'VS1', cut:'VG', price:9100,  cert:'IGI'},
+  {type:'Lab Grown', shape:'Round',   name:'0.72ct Round Lab Grown Diamond',   colour:'Fancy Pink', clarity:'VS2', cut:'EX', price:10150, cert:'IGI'},
+  {type:'Lab Grown', shape:'Emerald', name:'1.00ct Emerald Lab Grown Diamond', colour:'Fancy Blue', clarity:'SI1', cut:'VG', price:12600, cert:'IGI'},
+];
+
+const currentFilter = { type:'Natural', shape:'Round', colour:'White', clarity:'any', cut:'any' };
+let current = [...allDiamonds];
+
+function renderDiamonds(list) {
+  const grid = document.getElementById('diamondsGrid');
+  const count = document.getElementById('resultCount');
+  if (count) count.textContent = list.length.toLocaleString() + (list.length === 1 ? ' Diamond' : ' Diamonds');
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;font-family:var(--serif);font-size:22px;font-style:italic;color:var(--ld-muted)">No diamonds match your current filters.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map((d, i) => {
+    const globalIdx = allDiamonds.indexOf(d);
+    return `
+    <div class="diamond-card" data-type="${d.type}" data-shape="${d.shape}">
+      <div class="d-img"><div class="d-img-inner">${SVG[d.shape] || SVG.Round}</div></div>
+      <div class="d-info">
+        <span class="d-badge">${d.type}</span>
+        <p class="d-name">${d.name}</p>
+        <p class="d-specs">Colour: <b>${d.colour}</b> · Clarity: <b>${d.clarity}</b> · Cut: <b>${d.cut}</b></p>
+        <div class="d-footer">
+          <span class="d-price">R ${d.price.toLocaleString()}</span>
+          <span class="d-cert">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            ${d.cert} Certified
+          </span>
+        </div>
+        <button class="d-add" onclick="addToCart(${globalIdx})">Add to cart</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function applyFilters() {
+  const minCarat = parseFloat(document.getElementById('minCarat')?.value) || 0;
+  const maxCarat = parseFloat(document.getElementById('maxCarat')?.value) || 99;
+  const minPrice = parseFloat(document.getElementById('minPrice')?.value) || 0;
+  const maxPrice = parseFloat(document.getElementById('maxPrice')?.value) || 9999999;
+  const clarityGroups = {
+    'SI': ['SI1','SI2'], 'VS': ['VS1','VS2'], 'VVS+': ['VVS1','VVS2','IF','FL'], 'any': null
+  };
+  const cutGroups = { 'VG': ['VG'], 'EX': ['EX'], 'any': null };
+
+  current = allDiamonds.filter(d => {
+    const carat = parseFloat(d.name);
+    if (d.type !== currentFilter.type) return false;
+    if (currentFilter.shape && currentFilter.shape !== 'all' && d.shape !== currentFilter.shape) return false;
+    const whiteColours = ['D','E','F','G','H','I','J'];
+    if (currentFilter.colour === 'White' && !whiteColours.includes(d.colour)) return false;
+    if (currentFilter.colour === 'Fancy' && whiteColours.includes(d.colour)) return false;
+    if (!isNaN(carat) && (carat < minCarat || carat > maxCarat)) return false;
+    if (d.price < minPrice || d.price > maxPrice) return false;
+    const clarityAllow = clarityGroups[currentFilter.clarity];
+    if (clarityAllow && !clarityAllow.includes(d.clarity)) return false;
+    const cutAllow = cutGroups[currentFilter.cut];
+    if (cutAllow && !cutAllow.includes(d.cut)) return false;
+    return true;
+  });
+  renderDiamonds(current);
+}
+
+function switchTab(btn) {
+  document.querySelectorAll('.type-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter.type = btn.textContent.trim();
+  applyFilters();
+}
+
+function toggleShape(btn, shape) {
+  document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter.shape = shape === 'all' ? null : shape;
+  applyFilters();
+}
+
+function toggleCol(btn, col) {
+  document.querySelectorAll('.col-btn[onclick*="toggleCol"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter.colour = col;
+  applyFilters();
+}
+
+function toggleClarity(btn, clarity) {
+  document.querySelectorAll('.col-btn[onclick*="toggleClarity"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter.clarity = clarity;
+  applyFilters();
+}
+
+function toggleCut(btn, cut) {
+  document.querySelectorAll('.col-btn[onclick*="toggleCut"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter.cut = cut;
+  applyFilters();
+}
+
+function setView(view, btn) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const grid = document.getElementById('diamondsGrid');
+  if (view === 'list') grid.classList.add('list-view');
+  else grid.classList.remove('list-view');
+}
+
+function sortDiamonds(val) {
+  if (val === 'price-asc')  current.sort((a,b) => a.price - b.price);
+  if (val === 'price-desc') current.sort((a,b) => b.price - a.price);
+  if (val === 'carat')      current.sort((a,b) => parseFloat(a.name) - parseFloat(b.name));
+  renderDiamonds(current);
+}
+
+applyFilters();
+initScheduleDate();
+
+/* ── SCROLL-SPY ──────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  if (!document.getElementById('page-home').classList.contains('active')) return;
+  const sections = ['hero','specialities','why','gallery','reviews','faq','consultation'];
+  let cur = 'home';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 80) cur = id === 'hero' ? 'home' : id;
+  });
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  const map = {home:'nav-home',specialities:'nav-services',why:'nav-why',gallery:'nav-gallery',reviews:'nav-reviews',faq:'nav-faq',consultation:'nav-home'};
+  const active = document.getElementById(map[cur] || 'nav-home');
+  if (active) active.classList.add('active');
+});
+
+updateCartBadge();
+</script>
+</body>
+</html>
